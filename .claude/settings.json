@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl * cpanel.itnet.co.za*)",
+      "Bash(curl * itnet.co.za*2083*)"
+    ]
+  }
+}
