@@ -64,6 +64,76 @@ class TodoApp:
             "pending": pending
         }
 
+class ProposalApp:
+    def __init__(self, filename="proposals.json"):
+        self.filename = filename
+        self.proposals = self.load_proposals()
+
+    def load_proposals(self):
+        """Load proposals from file."""
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r') as f:
+                return json.load(f)
+        return []
+
+    def save_proposals(self):
+        """Save proposals to file."""
+        with open(self.filename, 'w') as f:
+            json.dump(self.proposals, f, indent=2)
+
+    def add_proposal(self, title, description=""):
+        """Add a new proposal, starting in the 'pending' status."""
+        proposal = {
+            "id": len(self.proposals) + 1,
+            "title": title,
+            "description": description,
+            "status": "pending"
+        }
+        self.proposals.append(proposal)
+        self.save_proposals()
+        return proposal
+
+    def list_proposals(self):
+        """List all proposals."""
+        return self.proposals
+
+    def approve_proposal(self, proposal_id):
+        """Mark a proposal as approved."""
+        for proposal in self.proposals:
+            if proposal["id"] == proposal_id:
+                proposal["status"] = "approved"
+                self.save_proposals()
+                return proposal
+        return None
+
+    def reject_proposal(self, proposal_id):
+        """Mark a proposal as rejected."""
+        for proposal in self.proposals:
+            if proposal["id"] == proposal_id:
+                proposal["status"] = "rejected"
+                self.save_proposals()
+                return proposal
+        return None
+
+    def delete_proposal(self, proposal_id):
+        """Delete a proposal by id."""
+        self.proposals = [p for p in self.proposals if p["id"] != proposal_id]
+        self.save_proposals()
+        return True
+
+    def get_stats(self):
+        """Get proposal statistics."""
+        total = len(self.proposals)
+        approved = sum(1 for p in self.proposals if p["status"] == "approved")
+        rejected = sum(1 for p in self.proposals if p["status"] == "rejected")
+        pending = total - approved - rejected
+        return {
+            "total": total,
+            "approved": approved,
+            "rejected": rejected,
+            "pending": pending
+        }
+
 def main():
     app = TodoApp()
 
@@ -84,6 +154,20 @@ def main():
 
     print("\nAfter completing first todo:")
     print("Stats:", app.get_stats())
+
+    proposals = ProposalApp()
+
+    proposals.add_proposal("Redesign homepage", "Refresh layout and branding")
+    proposals.add_proposal("Add dark mode")
+
+    print("\nProposals:")
+    for proposal in proposals.list_proposals():
+        print(f"  [{proposal['id']}] {proposal['title']} ({proposal['status']})")
+
+    proposals.approve_proposal(1)
+
+    print("\nAfter approving first proposal:")
+    print("Stats:", proposals.get_stats())
 
 if __name__ == "__main__":
     main()
